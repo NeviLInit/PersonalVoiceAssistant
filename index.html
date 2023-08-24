@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Command Website</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link href="https://css.gg/css?=|mic" rel="stylesheet">
+</head>
+<body>
+    <div class = "op">
+    <h1>Voice Command Website</h1>
+    <p>Click the button to start voice command recognition:</p>
+    <button class="reco" role="button" id="startButton"><i class="gg-mic"></i></button>
+    <p id="output"></p>
+    </div>
+
+    
+<script>
+    
+    const startButton = document.getElementById('startButton');
+    const output = document.getElementById('output');
+
+    startButton.addEventListener('click', () => {
+        output.textContent = 'Listening...';
+        const recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+            const command = event.results[0][0].transcript;
+            output.textContent = 'You said: ' + command;
+
+            fetch('http://localhost:5000/process_command', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: command })
+            })
+            .then(response => response.json())
+            .then(data => {
+                output.textContent = data.response;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                output.textContent = 'An error occurred.';
+            });
+        };
+
+        recognition.start();
+    });
+</script>
+</body>
+</html>
